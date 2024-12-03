@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "djoser",
     # local
     "core",
+    "post",
 ]
 
 MIDDLEWARE = [
