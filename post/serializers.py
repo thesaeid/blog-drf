@@ -22,8 +22,8 @@ class UserSerializer(serializers.Serializer):
 
 
 class CommentSerializer(serializers.ModelSerializer):
-    author = UserSerializer()
-    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+    author = UserSerializer(required=False)
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S", required=False)
 
     class Meta:
         model = Comment
