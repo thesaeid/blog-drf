@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .apis import BlogPostAPI, CommentAPI
+from .apis import BlogPostAPI, CommentAPI, BlogPostDetailAPI
 
 urlpatterns = [
     path(
@@ -10,8 +10,8 @@ urlpatterns = [
     ),
     path(
         "posts/<int:id>/",
-        BlogPostAPI.as_view(),
-        name="blogpost-delete",
+        BlogPostDetailAPI.as_view(),
+        name="blogpost-detail",
     ),
     path(
         "posts/<int:post_id>/comments/",
