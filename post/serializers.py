@@ -17,20 +17,17 @@ class SimpleTagSerializer(serializers.Serializer):
     name = serializers.CharField()
 
 
-class CommentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Comment
-        fields = [
-            "id",
-            "author",
-            "content",
-            "post",
-            "created_at",
-        ]
-
-
 class UserSerializer(serializers.Serializer):
     username = serializers.CharField()
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = UserSerializer()
+    created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
+
+    class Meta:
+        model = Comment
+        fields = ["id", "author", "content", "created_at"]
 
 
 class BlogPostSerializer(serializers.Serializer):
@@ -38,6 +35,7 @@ class BlogPostSerializer(serializers.Serializer):
     title = serializers.CharField(max_length=255)
     content = serializers.CharField()
     author = UserSerializer()
+    comments = CommentSerializer(many=True, read_only=True)
     created_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
     updated_at = serializers.DateTimeField(format="%Y-%m-%d %H:%M:%S")
     tags = SimpleTagSerializer(many=True)
