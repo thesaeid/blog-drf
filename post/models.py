@@ -20,7 +20,7 @@ class BlogPost(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    tags = models.ManyToManyField(Tag, related_name="blog_posts")
+    tags = models.ManyToManyField(Tag, related_name="blog_posts", blank=True)
 
     def __str__(self):
         return Truncator(self.title).chars(15)
