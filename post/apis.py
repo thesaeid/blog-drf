@@ -10,17 +10,23 @@ from .models import Tag, BlogPost, Comment
 from .serializers import (
     BlogPostSerializer,
     BlogPostCreateSerializer,
-    TagSerializer,
     CommentSerializer,
 )
 from .filters import BlogPostFilter
 from .paginations import BlogPostPagination
+from .permissions import IsAdmin, IsAuthor, IsReader
 
 user_model = get_user_model()
 
 
 class BlogPostAPI(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsReader | IsAdmin | IsAuthor,
+    ]
+
     def get(self, request):
+
         posts = BlogPost.objects.all().prefetch_related("tags").order_by("-created_at")
 
         blog_filter = BlogPostFilter(request.GET, queryset=posts)
@@ -34,6 +40,8 @@ class BlogPostAPI(APIView):
 
     def post(self, request):
         try:
+            self.check_permissions(request)
+
             user = user_model.objects.get(username=request.user)
             if user.role in ["author", "admin"]:
                 serializer = BlogPostCreateSerializer(data=request.data)
@@ -71,10 +79,24 @@ class BlogPostAPI(APIView):
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+
+class BlogPostDetailAPI(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsAdmin | IsAuthor,
+    ]
+
+    def get(self, request, id):
+        post = get_object_or_404(BlogPost, pk=id)
+        serializer = BlogPostSerializer(post)
+        return Response(serializer.data)
+
+    ###########
     def put(self, request, id):
         try:
             user = user_model.objects.get(username=request.user)
             post = get_object_or_404(BlogPost, pk=id)
+            self.check_object_permissions(request, post)
 
             if user.role == "admin" or post.author == user:
                 serializer = BlogPostCreateSerializer(post, data=request.data)
@@ -99,7 +121,7 @@ class BlogPostAPI(APIView):
                     return Response(
                         data={
                             "message": "Post updated successfully.",
-                            "post": BlogPostSerializer(post).data,
+                            "post": serializer.data,
                         },
                         status=status.HTTP_200_OK,
                     )
@@ -122,25 +144,15 @@ class BlogPostAPI(APIView):
     def delete(self, request, id):
         try:
             user = user_model.objects.get(username=request.user)
-            if user.role == "admin":
+            post = get_object_or_404(BlogPost, pk=id)
+            self.check_object_permissions(request, post)
+            if user.role in ["admin", "author"]:
                 post = get_object_or_404(BlogPost, pk=id)
                 post.delete()
 
                 return Response(
                     data={"message": "Post deleted successfully."},
                     status=status.HTTP_204_NO_CONTENT,
-                )
-            elif user.role == "author":
-                post = get_object_or_404(BlogPost, pk=id)
-                if post.author == user:
-                    post.delete()
-                    return Response(
-                        data={"message": "Post deleted successfully."},
-                        status=status.HTTP_204_NO_CONTENT,
-                    )
-                return Response(
-                    data={"message": "You're not allowed to delete this post."},
-                    status=status.HTTP_403_FORBIDDEN,
                 )
 
             return Response(
