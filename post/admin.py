@@ -9,7 +9,7 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(BlogPost)
 class BlogPostAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["id", "author", "content"]
 
 
 @admin.register(Comment)
