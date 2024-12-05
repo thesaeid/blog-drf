@@ -6,3 +6,4 @@ djangorestframework-simplejwt
 djoser
 gunicorn
 django-environ
+mysqlclient
