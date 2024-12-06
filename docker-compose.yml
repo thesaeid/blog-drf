@@ -1,0 +1,41 @@
+version: "3.9"
+
+services:
+
+  db:
+    container_name: blog-db
+    image: mariadb:10.9.3
+    environment:
+      - MARIADB_ROOT_PASSWORD=P@SSword
+      - MARIADB_DATABASE=blogdb
+      - MARIADB_USER=root
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - 3308:3306
+    networks:
+      - blognet
+    restart: on-failure
+
+  django:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: blog-api
+    command: ./docker/web_entrypoint.sh
+    environment:
+      - DATABASE_URL=mysql://root:P@SSword@db:3306/blogdb  
+    volumes:
+      - .:/app
+    ports:
+      - "8030:8030"
+    networks:
+      - blognet
+    depends_on:
+      - db
+    restart: on-failure
+
+volumes:
+    mariadb_data:
+networks:
+  blognet:
