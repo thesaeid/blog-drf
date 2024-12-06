@@ -6,4 +6,4 @@ djangorestframework-simplejwt
 djoser
 gunicorn
 django-environ
-mysqlclient
+mysqlclient==2.2.0
